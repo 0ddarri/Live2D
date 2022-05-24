@@ -3,6 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+struct LiveVertex
+{
+    public Vector3 position;
+    public Vector2 uv;
+
+    public BoneWeight weight;
+}
+
+struct LiveBone
+{
+    public Matrix4x4 bindPosition;
+    public Transform bonePosition;
+}
 
 public class Debugger : MonoBehaviour
 {
@@ -102,14 +115,12 @@ public class Debugger : MonoBehaviour
     {
         LiveBone bone = new LiveBone();
         GameObject boneGameObject = Instantiate(bonePrefab, Vector3.zero, Quaternion.identity);
-        boneGameObject.transform.parent = boneParent.transform.GetChild(0).transform;
+        boneGameObject.transform.parent = boneParent.transform;
 
-        Color color = Color.red;
-        color.a = 76;
-        boneGameObject.GetComponent<SpriteRenderer>().color = color;
+        boneGameObject.GetComponent<SpriteRenderer>().color = Color.red;
 
         bone.bonePosition = boneGameObject.transform;
-        // ¾÷µ¥ÀÌÆ® ÇÊ¿ä
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ê¿ï¿½
         bone.bindPosition = Matrix4x4.identity;
         liveBones.Add(bone);
 
@@ -203,7 +214,7 @@ public class Debugger : MonoBehaviour
 
     public void AddVertex(Vector3 worldPosition)
     {
-        // ¿ùµå¿¡¼­ ·ÎÄÃ·Î º¯È¯ÇÑ µÚ, live2DObject mesh¿¡ Ãß°¡
+        // ï¿½ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½, live2DObject meshï¿½ï¿½ ï¿½ß°ï¿½
         List<Vector3> triVtxPos;
         List<Vector2> triUV;
         if (IsPointLiesInMesh(worldPosition, out triVtxPos, out triUV))
@@ -288,7 +299,7 @@ public class Debugger : MonoBehaviour
         triVtxPos = new List<Vector3>();
         triUV = new List<Vector2>();
 
-        // live2DObjectÀÇ TriangleÀ» ´Ù µ¹¸é¼­ °Ë»ç
+        // live2DObjectï¿½ï¿½ Triangleï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½é¼­ ï¿½Ë»ï¿½
         Mesh mesh = live2DObject.GetComponent<MeshFilter>().mesh;
         int[] triangles = mesh.triangles;
 
@@ -305,7 +316,7 @@ public class Debugger : MonoBehaviour
             Vector3 B = mesh.vertices[triangles[(i * 3) + 1]];
             Vector3 C = mesh.vertices[triangles[(i * 3) + 2]];
 
-            // »ï°¢ÇüÀÇ ³ÐÀÌ ABC == PAB + PBC + PAC¶ó¸é P´Â ABC ¾È¿¡ ÀÖ´Ù.
+            // ï¿½ï°¢ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ABC == PAB + PBC + PACï¿½ï¿½ï¿½ Pï¿½ï¿½ ABC ï¿½È¿ï¿½ ï¿½Ö´ï¿½.
             Vector3 AB = B - A;
             Vector3 AC = C - A;
             float ABCarea = 0.5f * (Vector3.Cross(AB,AC)).magnitude;
@@ -317,7 +328,7 @@ public class Debugger : MonoBehaviour
             float PBCarea = 0.5f * (Vector3.Cross(PB, PC)).magnitude;
             float PACarea = 0.5f * (Vector3.Cross(PA, PC)).magnitude;
             
-            // ¿ÀÂ÷ ¹üÀ§°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡, ¹Ý¿Ã¸²
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½Ý¿Ã¸ï¿½
             float result = Mathf.Round((PABarea + PBCarea + PACarea) * 10.0f) * 0.1f;
             if (roundABCarea >= result)
             {
@@ -337,7 +348,23 @@ public class Debugger : MonoBehaviour
     public void SetBoneParent()
     {
         liveBones[selectBoneForParentDropdown2.value].bonePosition.parent = liveBones[selectBoneForParentDropdown1.value].bonePosition;
+    
+
+
+        //LiveBone previousBone = liveBones[previousBoneIndex];
+        //previousBone.color = Color.red;
+        //liveBones[previousVertexIndex] = previousBone;
+       
+        boneParent.transform.GetChild(previousBoneIndex).GetComponent<SpriteRenderer>().color = Color.red;
+
+        //LiveBone firstBone = liveBones[boneDropdown.value];
+        //firstBone.color = Color.green;
+        //liveBones[boneDropdown.value] = firstBone;
+
+        boneParent.transform.GetChild(boneDropdown.value).GetComponent<SpriteRenderer>().color = Color.green;
+        previousBoneIndex = boneDropdown.value;
     }
+
 
     // Start is called before the first frame update
     void Start()
@@ -345,7 +372,7 @@ public class Debugger : MonoBehaviour
         liveVertices = new List<LiveVertex>();
         liveBones = new List<LiveBone>();
 
-        // Äõµå ¼¼ÆÃ
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         quad.SetActive(false);
 
@@ -353,7 +380,7 @@ public class Debugger : MonoBehaviour
         live2DObject.GetComponent<MeshFilter>().mesh = mesh;
         staticMesh = mesh;
 
-        // Live Á¤º¸µé ¼¼ÆÃ
+        // Live ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         Vector3[] vertices = mesh.vertices;
 
         LiveVertex v1 = new LiveVertex();
@@ -402,10 +429,10 @@ public class Debugger : MonoBehaviour
         Mesh mesh = Instantiate<Mesh>(staticMesh);
         Vector3[] vertices = mesh.vertices;
 
-        // º»À» ÅëÇÑ ¿òÁ÷ÀÓ
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         for (int i = 0; i < vertices.Length; ++i)
         {
-            // À§Ä¡¿¡ ´ëÇØ ½ºÅ°´× ¿¬»ê ¼öÇà
+            // ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             Vector3 totalPosition = Vector4.zero;
             BoneWeight w = liveVertices[i].weight;
             for (int j = 0; j < 4; ++j)
@@ -445,12 +472,12 @@ public class Debugger : MonoBehaviour
                 if (boneIndex >= liveBones.Count)
                     continue;
 
-                Matrix4x4 boneMatrix = liveBones[boneIndex].bonePosition.localToWorldMatrix; // ¿ùµå
-                Matrix4x4 boneBindMatrix = liveBones[boneIndex].bindPosition; // ¿ùµå
+                Matrix4x4 boneMatrix = liveBones[boneIndex].bonePosition.localToWorldMatrix; // ï¿½ï¿½ï¿½ï¿½
+                Matrix4x4 boneBindMatrix = liveBones[boneIndex].bindPosition; // ï¿½ï¿½ï¿½ï¿½
 
                 Vector4 currentVertex = vertices[i];
                 currentVertex.w = 1;
-                // ·ÎÄÃ Á¤Á¡ À§Ä¡
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
                 Vector4 localPosition = boneBindMatrix.inverse * currentVertex;
 
                 Vector3 skinnedWorldPosition = boneMatrix * localPosition;
